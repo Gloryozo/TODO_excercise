@@ -1,5 +1,9 @@
 // this is to define the root URL for backend API
 const BACKEND_ROOT_URL = 'http://localhost:3001'
+// Import the Todos class from the specified file
+import { Todos } from "./class/Todos.js"
+//Create a new instance of the Todos class with the backend root URL
+const todos = new Todos(BACKEND_ROOT_URL)
 
 // to Select the <ul> element from the DOM
 const list = document.querySelector('ul')

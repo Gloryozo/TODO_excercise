@@ -29,34 +29,29 @@ const renderTask = (task) => {
     li.setAttribute('class', 'list-group-item')
     
     // Set innerHTML of the <li> element to the task value
-    li.innerHTML = task
+    li.innerHTML = task.getText()
     
     // Append the <li> element to the <ul> list
     list.append(li)
 }
 
 // Function to fetch tasks from the backend
-const getTasks = async () => {
-    try {
-        // Fetch tasks from the backend
-        const response = await fetch(BACKEND_ROOT_URL)
-        
-        // Parse response as JSON
-        const json = await response.json()
-        
-        // Iterate over each task in the JSON response
-        json.forEach(task => {
+const getTasks = () => {
+    todos.getTasks().then((tasks)=> {
+     // Iterate over each task in the JSON response
+        tasks.forEach(task => {
             // Render each task
-            renderTask(task.description)
-        })
-        
-        // Enable the input element after tasks are fetched
-        input.disabled = false
-    } catch (error) {
-        // Display an error message if fetching tasks fails
-        alert("Error retrieving tasks: " + error.message)
-    }
- }
+            renderTask(task)
+        })   ;
+        // Once all tasks have been rendered, re-enable the input field.
+        // This is done by setting its 'disabled' property to false, allowing the user to enter new tasks.
+        input.disabled = false;
+    }).catch((error) => {
+        // Display an error if fetching tasks fails
+        alert(error)
+    })
+};
+getTasks() 
  
  // Function to save task to the backend
 const saveTask = async (task) => {
@@ -80,6 +75,7 @@ const saveTask = async (task) => {
         alert("Error saving task " + error.message)
     }
 }
+
 // Event listener for keypress event on the input element
 input.addEventListener('keypress', (event) => {
     // Check if the pressed key is 'Enter'
@@ -92,17 +88,19 @@ input.addEventListener('keypress', (event) => {
         
         // Check if the input value is not empty
         if (task !== '') {
-            saveTask(task).then((json)=> {
+            todos.addTask(task).then((task)=> {
             // Call renderTask function to render the task
             renderTask(task)
-            
             // Clear the input value
             input.value = ''
+
+            input.focus()
             })
         
         }
     }
 })
 // Call getTasks function to fetch tasks from the backend
-getTasks()
+
+
 

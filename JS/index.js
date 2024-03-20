@@ -23,25 +23,40 @@ input.disabled = true
 // Function to render a task item
 const renderTask = (task) => {
     // Create a new <li> element
-    const li = document.createElement("li")
+    const li = document.createElement("li");
     
     // Set class attribute for the <li> element
-    li.setAttribute('class', 'list-group-item')
+    li.setAttribute('class','list-group-item');
+    li.setAttribute('data-key', task.getId().toString());
+    li.innerHTML = task.getText();
     
-    // Set innerHTML of the <li> element to the task value
-    li.innerHTML = task.getText()
+    // Render text content of the task
+    renderSpan(li, task.getText());
+    
+    // Render delete link for the task
+    renderLink(li, task.getId());
     
     // Append the <li> element to the <ul> list
-    list.append(li)
-}
+    list.appendChild(li);
+};
+
+
+// Function to render the text content of a task within a <span> element
+const renderSpan = (li, text) => {
+    // Create a <span> element
+    const span = li.appendChild(document.createElement('span'));
+    
+    // Set the innerHTML of the <span> element to the text content of the task
+    span.innerHTML = text;
+};
 
 // Function to fetch tasks from the backend
 const getTasks = () => {
     todos.getTasks().then((tasks)=> {
      // Iterate over each task in the JSON response
-        tasks.forEach(task => {
+        tasks.forEach(task1 => {
             // Render each task
-            renderTask(task)
+            renderTask(task1)
         })   ;
         // Once all tasks have been rendered, re-enable the input field.
         // This is done by setting its 'disabled' property to false, allowing the user to enter new tasks.
@@ -51,33 +66,53 @@ const getTasks = () => {
         alert(error)
     })
 };
+
 getTasks() 
  
- // Function to save task to the backend
-const saveTask = async (task) => {
-    try {
-        // Send task data to the backend
-       // Parse task data into JSON format
-    const json = JSON.stringify({ description: task })
-
-    // Send a POST request to the backend API to save the task
-    const response = await fetch(BACKEND_ROOT_URL + '/new', {
-    method: 'POST', // Use the POST method
-    headers: {
-        'Content-Type': 'application/json' // Specify content type as JSON
-    },
-    body: json // Set the request body to the JSON-formatted task data
-})
-        // Return the JSON response
-        return response.json()
-    } catch (error) {
-        // Display error message if saving task fails
-        alert("Error saving task " + error.message)
-    }
+// Function to render a link for deleting a task
+const renderLink = (li,id) => {
+    const a = li.appendChild(document.createElement('a'))
+    a.innerHTML = '<i class="bi bi-trash"></i>';
+    a.setAttribute('style','float: right')
+    a.setAttribute('href', '#');                // Set the href attribute to '#' to make the anchor element clickable
+    a.setAttribute('data-id', id);              // Store the task's ID in a 'data-id' attribute for access during the delete operation
+    a.addEventListener('click',(event)=> {
+        todos.removeTask(id).then((removed_id) => {
+            const li_to_remove = document.querySelector(`[data-key='${removed_id}']`);
+            if (li_to_remove) {
+                list.removeChild(li_to_remove);
+            }
+    }).catch((error)=> {
+        alert(error)
+        })
+    })
 }
+ 
+  // ****** DELETE BUTTON EVENT LISTNER: Add a click event listener to the anchor element **********
+  a.addEventListener('click', function(event) 
+  {
+      event.preventDefault(); // Prevent the link from changing the URL
+
+      todos.removeTask(id)    //Run the Back End Task Removal Function
+      .then(() =>     //If the Task delete success Remove the whole Task List Item
+      {
+          li.remove(); // Remove the list item from the DOM
+      })
+      
+      .catch((error) =>   //If the Task delete fails
+      {
+          alert(error); // Alert the error if something goes wrong
+      });
+  });
+     li.appendChild(a); 
+    // ****** APPEND THE ANCHOR ELEMENT TO THE LIST ITEM **********
+ // Append the anchor element to the list item 
+ // End of renderLink function
+
+
 
 // Event listener for keypress event on the input element
-input.addEventListener('keypress', (event) => {
+input.addEventListener('keypress', (event) => {   
     // Check if the pressed key is 'Enter'
     if (event.key === 'Enter') {
         // Prevent the default behavior of the 'Enter' key
@@ -101,6 +136,10 @@ input.addEventListener('keypress', (event) => {
     }
 })
 // Call getTasks function to fetch tasks from the backend
+
+
+
+
 
 
 
